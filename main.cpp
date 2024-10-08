@@ -2,18 +2,14 @@
 #include <string>
 #include <regex>
 #include <vector>
-#include <stdio.h>
+#include <stdint.h>
+#include "object_handler.h"
 
 #include <asio.hpp>
 
-typedef struct
-{
-    uint64_t id;
-    uint32_t x_cord;
-    uint32_t y_cord;
-    uint8_t type;
-    uint8_t color[3];
-} object_t;
+const uint8_t type_count = 3;
+
+object_t object_list[type_count] = {0};
 
 int main()
 {
@@ -42,6 +38,8 @@ int main()
     printf("%lu \n", y_cord);
     printf("%lu \n", type);
 
+    object_update(&object_list[type - 1], id, x_cord, y_cord, type);
+
     /*  // Print the tokens
      for (const auto &token : tokens)
      {
@@ -52,5 +50,3 @@ int main()
     /*  for (std::string str; std::getline(input, str);)
          std::cout << str << '\n'; */
 }
-
-// g++ -I../../asio/asio/include main.cpp -o test.exe -lws2_32
