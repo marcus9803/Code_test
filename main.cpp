@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <vector>
 #include <stdint.h>
 #include "object_handler.hpp"
 #include "server_input.hpp"
@@ -14,16 +13,16 @@ object_t object_list[type_count] = {0};
 int main()
 {
     uint8_t object_count = sizeof(object_list) / sizeof(object_list[0]);
-    object_init(object_list, object_count);
-
     uint64_t id = 0;
     uint32_t x_cord = 0, y_cord = 0;
     uint8_t type = 0;
 
-    asio::ip::tcp::iostream input("localhost", "5463");
+    object_init(object_list, object_count);
+
+    asio::ip::tcp::iostream input("localhost", "5463"); // TODO: Check for errors
     std::string str;
     std::getline(input, str);
-    read_server_input(str, &id, &x_cord, &y_cord, &type);
+    extract_server_input_content(str, &id, &x_cord, &y_cord, &type);
 
     printf("%llu \n", id);
     printf("%lu \n", x_cord);
@@ -36,4 +35,12 @@ int main()
     printf("%x \n", object_list[type - 1].color[0]);
     printf("%x \n", object_list[type - 1].color[1]);
     printf("%x \n", object_list[type - 1].color[2]);
+
+    asio::io_context io_context;
+    asio::ip::tcp::acceptor acceptor(io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 9090));
+
+    asio::ip::tcp::iostream client_data;
+    acceptor.accept(*client_data.rdbuf());
+
+    client_data << "Hello, client!\n";
 }

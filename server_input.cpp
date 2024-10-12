@@ -5,7 +5,7 @@
 #include <regex>
 #include <asio.hpp>
 
-void read_server_input(std::string str_, uint64_t *id_ptr, uint32_t *x_cord_ptr, uint32_t *y_cord_ptr, uint8_t *type_ptr)
+void extract_server_input_content(std::string str_, uint64_t *id_ptr, uint32_t *x_cord_ptr, uint32_t *y_cord_ptr, uint8_t *type_ptr)
 {
     std::regex delimiter("[;=]"); // Regular expression for delimiters
 

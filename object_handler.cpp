@@ -1,5 +1,7 @@
-#include <stdint.h>
 #include "object_handler.hpp"
+
+#include <stdint.h>
+#include "stdio.h"
 #include <stdlib.h>
 #include <math.h>
 
@@ -50,16 +52,18 @@ void object_color_update(object_t *object_ptr)
 {
     float_t distance = object_distance_to_centre(object_ptr->x_cord, object_ptr->y_cord);
 
+    printf("%f \n", distance);
+
     uint8_t color_byte = 0;
     if (object_ptr->category == 2)
     {
-        if (distance >= 100)
+        if (distance < 100)
         {
-            color_byte = yellow_byte;
+            color_byte = red_byte;
         }
         else
         {
-            color_byte = red_byte;
+            color_byte = yellow_byte;
         }
     }
     else if (object_ptr->type == 1)
