@@ -3,44 +3,73 @@
 #include <stdint.h>
 #include "object_handler.hpp"
 #include "server_input.hpp"
+#include "output_to_client.hpp"
 
 #include <asio.hpp>
 
-const uint8_t type_count = 3;
+object_t object_list[3] = {0};
 
-object_t object_list[type_count] = {0};
+void handle_read(const asio::error_code &error, std::size_t bytes_transferred, std::shared_ptr<asio::streambuf> buffer, asio::ip::tcp::socket &socket)
+{
+    if (!error)
+    {
+        std::istream is(buffer.get());
+        std::string str;
+
+        while (std::getline(is, str))
+        {
+            std::cout << str << std::endl;
+        }
+
+        // Continue reading
+        asio::async_read_until(socket, *buffer, '\n',
+                               [&socket, buffer](const asio::error_code &ec, std::size_t bytes_transferred)
+                               {
+                                   handle_read(ec, bytes_transferred, buffer, socket);
+                               });
+    }
+    else
+    {
+        std::cerr << "Error during read: " << error.message() << std::endl;
+    }
+}
 
 int main()
 {
-    uint8_t object_count = sizeof(object_list) / sizeof(object_list[0]);
-    uint64_t id = 0;
-    uint32_t x_cord = 0, y_cord = 0;
-    uint8_t type = 0;
+    try
+    {
+        // std::vector<object_t> object_list;
+        asio::io_context io_context;
+        asio::ip::tcp::socket socket(io_context);
 
-    object_init(object_list, object_count);
+        // object_init(object_list, object_count);
 
-    asio::ip::tcp::iostream input("localhost", "5463"); // TODO: Check for errors
-    std::string str;
-    std::getline(input, str);
-    extract_server_input_content(str, &id, &x_cord, &y_cord, &type);
+        socket.connect(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 5463));
 
-    printf("%llu \n", id);
-    printf("%lu \n", x_cord);
-    printf("%lu \n", y_cord);
-    printf("%lu \n", type);
+        // Create a buffer to hold the data
+        auto buffer = std::make_shared<asio::streambuf>();
 
-    object_rx_update(&object_list[type - 1], id, x_cord, y_cord);
-    object_color_update(&object_list[type - 1]);
+        asio::async_read_until(socket, *buffer, '\n',
+                               [&socket, buffer](const asio::error_code &ec, std::size_t bytes_transferred)
+                               {
+                                   handle_read(ec, bytes_transferred, buffer, socket);
+                               });
 
-    printf("%x \n", object_list[type - 1].color[0]);
-    printf("%x \n", object_list[type - 1].color[1]);
-    printf("%x \n", object_list[type - 1].color[2]);
+        // TODO: Async acceptor
+        asio::ip::tcp::acceptor acceptor(io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 9090));
 
-    asio::io_context io_context;
-    asio::ip::tcp::acceptor acceptor(io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 9090));
+        asio::ip::tcp::iostream client_data;
+        acceptor.accept(*client_data.rdbuf());
 
-    asio::ip::tcp::iostream client_data;
-    acceptor.accept(*client_data.rdbuf());
+        asio::steady_timer timer(io_context, std::chrono::milliseconds(client_output_time_interval));
 
-    client_data << "Hello, client!\n";
+        fixed_time_output_to_client(client_data, timer, object_list[0]);
+
+        io_context.run();
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+    return 0;
 }
