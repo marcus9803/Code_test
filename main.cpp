@@ -12,7 +12,6 @@ int main()
     try
     {
         std::vector<object_t> object_list;
-        object_list.push_back(object_t(0, 0, 0, 0));
         asio::io_context io_context;
         asio::ip::tcp::socket socket(io_context);
 

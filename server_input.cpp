@@ -25,7 +25,7 @@ void handle_read(const asio::error_code &error, std::size_t bytes_transferred, s
             if (extract_server_input_content(str, &id, &x_cord, &y_cord, &type))
             {
                 uint16_t index = object_rx_update(object_list_, id, x_cord, y_cord, type);
-                // object_color_update(&object_list_[index]);
+                object_color_update(&object_list_[index]);
             }
         }
 

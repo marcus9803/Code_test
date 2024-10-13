@@ -41,7 +41,7 @@ uint16_t object_rx_update(std::vector<object_t> &object_list_, uint64_t id_, uin
             index = i;
         }
     }
-    if (index == 0xFFFF)
+    if (index == 0xFFFF || object_list_.empty())
     {
         object_list_.push_back(object_t(id_, x_cord_, y_cord_, type_));
         index = (object_list_.size() - 1);
