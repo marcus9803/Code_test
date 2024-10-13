@@ -7,17 +7,14 @@
 
 #include <asio.hpp>
 
-object_t object_list[3] = {0};
-
 int main()
 {
     try
     {
-        // std::vector<object_t> object_list;
+        std::vector<object_t> object_list;
+        object_list.push_back(object_t(0, 0, 0, 0));
         asio::io_context io_context;
         asio::ip::tcp::socket socket(io_context);
-
-        // object_init(object_list, object_count);
 
         socket.connect(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 5463));
 
@@ -25,7 +22,7 @@ int main()
         auto buffer = std::make_shared<asio::streambuf>();
 
         asio::async_read_until(socket, *buffer, '\n',
-                               [&socket, buffer, object_list](const asio::error_code &ec, std::size_t bytes_transferred)
+                               [&socket, buffer, &object_list](const asio::error_code &ec, std::size_t bytes_transferred)
                                {
                                    handle_read(ec, bytes_transferred, buffer, socket, object_list);
                                });
@@ -38,7 +35,7 @@ int main()
 
         asio::steady_timer timer(io_context, std::chrono::milliseconds(client_output_time_interval));
 
-        fixed_time_output_to_client(client_data, timer, object_list[0]);
+        fixed_time_output_to_client(client_data, timer, object_list);
 
         io_context.run();
     }
