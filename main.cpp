@@ -9,31 +9,6 @@
 
 object_t object_list[3] = {0};
 
-void handle_read(const asio::error_code &error, std::size_t bytes_transferred, std::shared_ptr<asio::streambuf> buffer, asio::ip::tcp::socket &socket)
-{
-    if (!error)
-    {
-        std::istream is(buffer.get());
-        std::string str;
-
-        while (std::getline(is, str))
-        {
-            std::cout << str << std::endl;
-        }
-
-        // Continue reading
-        asio::async_read_until(socket, *buffer, '\n',
-                               [&socket, buffer](const asio::error_code &ec, std::size_t bytes_transferred)
-                               {
-                                   handle_read(ec, bytes_transferred, buffer, socket);
-                               });
-    }
-    else
-    {
-        std::cerr << "Error during read: " << error.message() << std::endl;
-    }
-}
-
 int main()
 {
     try
@@ -50,9 +25,9 @@ int main()
         auto buffer = std::make_shared<asio::streambuf>();
 
         asio::async_read_until(socket, *buffer, '\n',
-                               [&socket, buffer](const asio::error_code &ec, std::size_t bytes_transferred)
+                               [&socket, buffer, object_list](const asio::error_code &ec, std::size_t bytes_transferred)
                                {
-                                   handle_read(ec, bytes_transferred, buffer, socket);
+                                   handle_read(ec, bytes_transferred, buffer, socket, object_list);
                                });
 
         // TODO: Async acceptor

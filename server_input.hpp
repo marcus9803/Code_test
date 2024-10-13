@@ -5,6 +5,5 @@
 #include <iostream>
 #include "object_handler.hpp"
 
-void read_server_input(asio::ip::tcp::iostream &server_data_, asio::io_context &io_context_);
-
+void handle_read(const asio::error_code &error, std::size_t bytes_transferred, std::shared_ptr<asio::streambuf> buffer, asio::ip::tcp::socket &socket, object_t object_list_[]);
 void extract_server_input_content(std::string str_, uint64_t *id_ptr, uint32_t *x_cord_ptr, uint32_t *y_cord_ptr, uint8_t *type_ptr);
