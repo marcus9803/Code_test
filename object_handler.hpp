@@ -20,6 +20,6 @@ struct object_t
 
 void object_init(object_t *object_ptr);
 void object_color_update(object_t *object_ptr);
-uint16_t object_rx_update(std::vector<object_t> &object_list_, uint64_t id_, uint32_t x_cord_, uint32_t y_cord_, uint8_t type_);
+uint16_t object_rx_update(std::vector<object_t> &object_list, uint64_t id, uint32_t x_cord, uint32_t y_cord, uint8_t type);
 
 #endif // End of OBJECT_HANDLER_HPP

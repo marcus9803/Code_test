@@ -44,27 +44,27 @@ static std::vector<uint8_t> serialize_object(object_t &object)
     return buffer;
 }
 
-void fixed_time_output_to_client(asio::ip::tcp::iostream &client_data, asio::steady_timer &timer, std::vector<object_t> &object_list_)
+void fixed_time_output_to_client(asio::ip::tcp::iostream &client_data, asio::steady_timer &timer, std::vector<object_t> &object_list)
 {
     // Write the preamble data in binary form to the client stream
-    client_preamble.object_count = object_list_.size();
+    client_preamble.object_count = object_list.size();
     std::vector<uint8_t> preamble_data = serialize_preamble(client_preamble);
     client_data.write(reinterpret_cast<const char *>(preamble_data.data()), preamble_data.size());
 
     // Write each object in binary form  to the client stream
     std::vector<uint8_t> binary_data;
-    for (uint16_t i = 0; i < object_list_.size(); i++)
+    for (uint16_t i = 0; i < object_list.size(); i++)
     {
-        binary_data = serialize_object(object_list_[i]);
+        binary_data = serialize_object(object_list[i]);
         client_data.write(reinterpret_cast<const char *>(binary_data.data()), binary_data.size());
     }
 
     timer.expires_after(std::chrono::milliseconds(client_output_time_interval));
 
-    timer.async_wait([&client_data, &timer, &object_list_](const asio::error_code &error)
+    timer.async_wait([&client_data, &timer, &object_list](const asio::error_code &error)
                      {
         if (!error) {
-            fixed_time_output_to_client(client_data, timer, object_list_);
+            fixed_time_output_to_client(client_data, timer, object_list);
         }
         else
         {

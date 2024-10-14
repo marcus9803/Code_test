@@ -7,31 +7,31 @@
 #include <iostream>
 #include "object_handler.hpp"
 
-uint64_t id = 0;
-uint32_t x_cord = 0, y_cord = 0;
-uint8_t type = 0;
-
-void handle_read(const asio::error_code &error, std::size_t bytes_transferred, std::shared_ptr<asio::streambuf> buffer, asio::ip::tcp::socket &socket, std::vector<object_t> &object_list_)
+void handle_read(const asio::error_code &error, std::size_t bytes_transferred, std::shared_ptr<asio::streambuf> buffer, asio::ip::tcp::socket &socket, std::vector<object_t> &object_list)
 {
     if (!error)
     {
         std::istream is(buffer.get());
         std::string str;
 
+        uint64_t id = 0;
+        uint32_t x_cord = 0, y_cord = 0;
+        uint8_t type = 0;
+
         while (std::getline(is, str))
         {
             if (extract_server_input_content(str, &id, &x_cord, &y_cord, &type))
             {
-                uint16_t index = object_rx_update(object_list_, id, x_cord, y_cord, type);
-                object_color_update(&object_list_[index]);
+                uint16_t index = object_rx_update(object_list, id, x_cord, y_cord, type);
+                object_color_update(&object_list[index]);
             }
         }
 
         // Continue reading
         asio::async_read_until(socket, *buffer, '\n',
-                               [&socket, buffer, &object_list_](const asio::error_code &ec, std::size_t bytes_transferred)
+                               [&socket, buffer, &object_list](const asio::error_code &ec, std::size_t bytes_transferred)
                                {
-                                   handle_read(ec, bytes_transferred, buffer, socket, object_list_);
+                                   handle_read(ec, bytes_transferred, buffer, socket, object_list);
                                });
     }
     else
@@ -40,18 +40,18 @@ void handle_read(const asio::error_code &error, std::size_t bytes_transferred, s
     }
 }
 
-bool extract_server_input_content(std::string str_, uint64_t *id_ptr, uint32_t *x_cord_ptr, uint32_t *y_cord_ptr, uint8_t *type_ptr)
+bool extract_server_input_content(std::string str, uint64_t *id_ptr, uint32_t *x_cord_ptr, uint32_t *y_cord_ptr, uint8_t *type_ptr)
 {
     try
     {
-        if (str_.empty())
+        if (str.empty())
         {
             std::clog << "Error: Input string is empty." << std::endl;
             return false;
         }
         std::regex delimiter("[;=]"); // Regular expression for delimiters
 
-        std::sregex_token_iterator tokenIt(str_.begin(), str_.end(), delimiter, -1);
+        std::sregex_token_iterator tokenIt(str.begin(), str.end(), delimiter, -1);
         std::sregex_token_iterator end;
 
         std::vector<std::string> tokens;
