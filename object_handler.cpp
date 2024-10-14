@@ -101,11 +101,11 @@ void object_color_update(object_t *object_ptr)
     {
         if (distance < 50)
         {
-            color_byte = blue_byte;
+            color_byte = yellow_byte;
         }
         else
         {
-            color_byte = yellow_byte;
+            color_byte = blue_byte;
         }
     }
     object_ptr->color[1] = color_byte;

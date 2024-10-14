@@ -7,23 +7,23 @@
 #include "object_handler.hpp"
 
 const uint16_t client_output_time_interval = 1667;
-uint32_t preamble = 0xFE00;
 
-static std::vector<uint8_t> serialize_object(object_t &obj)
+struct preamble_t
 {
-    std::vector<uint8_t> buffer(sizeof(object_t));
-    std::memcpy(buffer.data(), &obj, sizeof(object_t));
+    uint32_t preamble;
+    uint32_t object_count;
+};
+
+preamble_t client_preamble = {0xFE00, 0};
+
+static std::vector<uint8_t> serialize_preamble(preamble_t &input)
+{
+    std::vector<uint8_t> buffer(sizeof(preamble_t));
+    std::memcpy(buffer.data(), &input, sizeof(preamble_t));
     return buffer;
 }
 
-static std::vector<uint8_t> serialize_uint32_t(uint32_t &input)
-{
-    std::vector<uint8_t> buffer(sizeof(uint32_t));
-    std::memcpy(buffer.data(), &input, sizeof(uint32_t));
-    return buffer;
-}
-
-/* std::vector<uint8_t> serialize_object(const object_t &object)
+static std::vector<uint8_t> serialize_object(const object_t &object)
 {
     std::vector<uint8_t> buffer;
 
@@ -42,24 +42,22 @@ static std::vector<uint8_t> serialize_uint32_t(uint32_t &input)
     append_to_buffer(object.color, sizeof(object.color));
 
     return buffer;
-} */
+}
 
 void fixed_time_output_to_client(asio::ip::tcp::iostream &client_data, asio::steady_timer &timer, std::vector<object_t> &object_list_)
 {
-    auto binary_data = serialize_uint32_t(preamble);
-    client_data.write(reinterpret_cast<const char *>(binary_data.data()), binary_data.size());
+    // Write the preamble data in binary form to the client stream
+    client_preamble.object_count = object_list_.size();
+    std::vector<uint8_t> preamble_data = serialize_preamble(client_preamble);
+    client_data.write(reinterpret_cast<const char *>(preamble_data.data()), preamble_data.size());
 
-    uint32_t object_count = object_list_.size();
-    binary_data = serialize_uint32_t(object_count);
-    client_data.write(reinterpret_cast<const char *>(binary_data.data()), binary_data.size());
-
+    // Write each object in binary form  to the client stream
+    std::vector<uint8_t> binary_data;
     for (uint16_t i = 0; i < object_list_.size(); i++)
     {
         binary_data = serialize_object(object_list_[i]);
         client_data.write(reinterpret_cast<const char *>(binary_data.data()), binary_data.size());
     }
-
-    // Write the binary data to the stream
 
     // client_data.flush();
 
