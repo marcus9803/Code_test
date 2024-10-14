@@ -4,13 +4,16 @@
 #include "object_handler.hpp"
 #include "server_input.hpp"
 #include "output_to_client.hpp"
-
+#include <fstream>
 #include <asio.hpp>
 
 int main()
 {
     try
     {
+        std::ofstream log_file("errorlog.txt");
+        std::clog.rdbuf(log_file.rdbuf());
+
         std::vector<object_t> object_list;
         asio::io_context io_context;
         asio::ip::tcp::socket socket(io_context);
@@ -40,7 +43,7 @@ int main()
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::clog << "Error: " << e.what() << std::endl;
     }
     return 0;
 }

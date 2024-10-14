@@ -36,7 +36,7 @@ void handle_read(const asio::error_code &error, std::size_t bytes_transferred, s
     }
     else
     {
-        std::cerr << "Error during read: " << error.message() << std::endl;
+        std::clog << "Error during read from server: " << error.message() << std::endl;
     }
 }
 
@@ -46,7 +46,7 @@ bool extract_server_input_content(std::string str_, uint64_t *id_ptr, uint32_t *
     {
         if (str_.empty())
         {
-            std::cerr << "Error: Input string is empty." << std::endl;
+            std::clog << "Error: Input string is empty." << std::endl;
             return false;
         }
         std::regex delimiter("[;=]"); // Regular expression for delimiters
@@ -59,7 +59,7 @@ bool extract_server_input_content(std::string str_, uint64_t *id_ptr, uint32_t *
         {
             if (tokenIt->str().empty())
             {
-                std::cerr << "Error: Empty token found." << std::endl;
+                std::clog << "Error: Content missing in read from server." << std::endl;
                 return false;
             }
             tokens.push_back(*tokenIt); // Add each token to the vector
@@ -67,19 +67,24 @@ bool extract_server_input_content(std::string str_, uint64_t *id_ptr, uint32_t *
 
         if (tokens.size() < 8)
         {
-            std::cerr << "Error: Not enough tokens extracted from the string." << std::endl;
+            std::clog << "Error: Content missing in read from server." << std::endl;
             return false;
         }
 
         *id_ptr = std::stoull(tokens[1]);
-        *x_cord_ptr = std::stoull(tokens[3]);
-        *y_cord_ptr = std::stoull(tokens[5]);
-        *type_ptr = std::stoull(tokens[7]); // TODO: Check max uint8
+        *x_cord_ptr = std::stoul(tokens[3]);
+        *y_cord_ptr = std::stoul(tokens[5]);
+        uint64_t type_value = std::stoull(tokens[7]);
+        if (type_value > std::numeric_limits<uint8_t>::max())
+        {
+            std::clog << "Error in server input or read from server." << std::endl;
+        }
+        *type_ptr = static_cast<uint8_t>(type_value);
         return true;
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Error server extract: " << e.what() << std::endl;
+        std::clog << "Error server extract: " << e.what() << std::endl;
         return false;
     }
 }

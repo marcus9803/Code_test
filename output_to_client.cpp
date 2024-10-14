@@ -23,7 +23,7 @@ static std::vector<uint8_t> serialize_preamble(preamble_t &input)
     return buffer;
 }
 
-static std::vector<uint8_t> serialize_object(const object_t &object)
+static std::vector<uint8_t> serialize_object(object_t &object)
 {
     std::vector<uint8_t> buffer;
 
@@ -59,13 +59,15 @@ void fixed_time_output_to_client(asio::ip::tcp::iostream &client_data, asio::ste
         client_data.write(reinterpret_cast<const char *>(binary_data.data()), binary_data.size());
     }
 
-    // client_data.flush();
-
     timer.expires_after(std::chrono::milliseconds(client_output_time_interval));
 
     timer.async_wait([&client_data, &timer, &object_list_](const asio::error_code &error)
                      {
         if (!error) {
             fixed_time_output_to_client(client_data, timer, object_list_);
+        }
+        else
+        {
+            std::clog << "Error in output to client: " << error.message() << std::endl;
         } });
 }
