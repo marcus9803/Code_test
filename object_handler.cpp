@@ -6,6 +6,10 @@
 #include <vector>
 #include <iostream>
 
+/**
+ * @brief Initialize an object.
+ * @param object_ptr Pointer to object
+ */
 void object_init(object_t *object_ptr)
 {
     uint8_t first_color_byte = 0x5B;
@@ -16,12 +20,21 @@ void object_init(object_t *object_ptr)
     {
         object_ptr->category = 2;
     }
-    else
+    else // Type 1 or 2
     {
         object_ptr->category = 1;
     }
 }
 
+/**
+ * @brief Update object with data.
+ * @param object_list Vector with objects.
+ * @param id Id for object.
+ * @param x_cord X coordinate for object.
+ * @param y_cord Y coordinate for object.
+ * @param type Object type.
+ * @return Index for object in object_list.
+ */
 uint16_t object_rx_update(std::vector<object_t> &object_list, uint64_t id, uint32_t x_cord, uint32_t y_cord, uint8_t type)
 {
 
@@ -50,6 +63,12 @@ uint16_t object_rx_update(std::vector<object_t> &object_list, uint64_t id, uint3
     return index;
 }
 
+/**
+ * @brief Calculate distance to designated location.
+ * @param x_cord X coordinate.
+ * @param y_cord Y coordinate.
+ * @return Distance to designated location.
+ */
 static float_t object_distance_to_designated(uint32_t x_cord, uint32_t y_cord)
 {
     uint8_t designated_cord = 150;
@@ -59,6 +78,10 @@ static float_t object_distance_to_designated(uint32_t x_cord, uint32_t y_cord)
     return distance;
 }
 
+/**
+ * @brief Update object color based on distance to designated location.
+ * @param object_ptr Pointer to object to update.
+ */
 void object_color_update(object_t *object_ptr)
 {
     float_t distance = object_distance_to_designated(object_ptr->x_cord, object_ptr->y_cord);

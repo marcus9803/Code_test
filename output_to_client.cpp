@@ -16,6 +16,11 @@ struct preamble_t
 
 preamble_t client_preamble = {0xFE00, 0};
 
+/**
+ * @brief Split input into vector with bytes for the preamble type elements.
+ * @param input Preamble object.
+ * @return Vector with bytes
+ */
 static std::vector<uint8_t> serialize_preamble(preamble_t &input)
 {
     std::vector<uint8_t> buffer(sizeof(preamble_t));
@@ -23,6 +28,11 @@ static std::vector<uint8_t> serialize_preamble(preamble_t &input)
     return buffer;
 }
 
+/**
+ * @brief Split input into vector with bytes for the object type elements. Exclude category.
+ * @param object Object
+ * @return Vector with bytes.
+ */
 static std::vector<uint8_t> serialize_object(object_t &object)
 {
     std::vector<uint8_t> buffer;
@@ -44,6 +54,12 @@ static std::vector<uint8_t> serialize_object(object_t &object)
     return buffer;
 }
 
+/**
+ * @brief Output a preamble followed by each object in binary form to the client.
+ * @param client_data Client connection.
+ * @param timer Timer
+ * @param object_list Vector with objects to send to client.
+ */
 void fixed_time_output_to_client(asio::ip::tcp::iostream &client_data, asio::steady_timer &timer, std::vector<object_t> &object_list)
 {
     // Write the preamble data in binary form to the client stream
@@ -59,8 +75,10 @@ void fixed_time_output_to_client(asio::ip::tcp::iostream &client_data, asio::ste
         client_data.write(reinterpret_cast<const char *>(binary_data.data()), binary_data.size());
     }
 
+    // Set up the timer to expire after x ms.
     timer.expires_after(std::chrono::milliseconds(client_output_time_interval));
 
+    // Asyncronous wait until timer expires.
     timer.async_wait([&client_data, &timer, &object_list](const asio::error_code &error)
                      {
         if (!error) {
